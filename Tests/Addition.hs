@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 module Tests.Addition where
 -- * Test addition of two numbers.
 

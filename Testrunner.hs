@@ -29,9 +29,8 @@ runTest p = do
     "--opt-whole-program",
     "-DO2",
     "--onexec",
-    "--with-js=" ++ tp ++ "TestData.js",
     tp ++ p ++ ".hs"]
-  hastecResult <- readProcess "node" [tp ++ "Test.js"] ""
+  hastecResult <- readProcess "node" [tp ++ p ++ ".js"] ""
   putStrLn $ "Haste says:\t" ++ hastecResult
 
   ghcResult <- readProcess "runghc" [
