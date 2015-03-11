@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 module Tests.Addition where
 -- * Test addition of two numbers.
 
@@ -9,6 +8,6 @@ addition a b = a + b
 
 main :: IO ()
 main = do
-  let (a, b) = testData
-   in print $ addition a b
+  putStrLn "Haste bryr sig inte om vad jag skriver. Alltid samma output :("
+  print $ addition (fst testData) (snd testData)
 

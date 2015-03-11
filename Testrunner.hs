@@ -11,34 +11,35 @@ import Test.QuickCheck
 type Name     = String
 type TestData = String
 
--- Take a name and a generator
 data Test = Test Name TestData
   deriving Show
 
-testPath :: IO FilePath
-testPath = (++ "/Tests/") <$> getCurrentDirectory
+-- | Runs a test.
+runTest :: Test -> IO ()
+runTest (Test name testData) = do
+  tp <- (++ "/Tests/") <$> getCurrentDirectory
 
--- 2. Run the Haskell version of the test.
--- 3. Run the Javascript version of the test.
--- 4. Compare the results.
-runTest :: Name -> IO ()
-runTest p = do
-  tp <- testPath
+  -- There's nothing you can't solve with some sed.
+  callCommand $ "sed -e 's/#include \"testdata.incl\"/testData = " ++ testData ++ "/' " ++ tp ++ name ++ ".hs > " ++ tp ++ name ++ ".t"
+
+  -- 2. Run the Javascript version of the test.
   callProcess "hastec" [
     "-fforce-recomp",
     "--opt-whole-program",
     "-DO2",
     "--onexec",
-    tp ++ p ++ ".hs"]
-  hastecResult <- readProcess "node" [tp ++ p ++ ".js"] ""
+    tp ++ name ++ ".t"]
+  hastecResult <- readProcess "node" [tp ++ name ++ ".js"] ""
   putStrLn $ "Haste says:\t" ++ hastecResult
 
+  -- 3. Run the Haskell version of the test.
   ghcResult <- readProcess "runghc" [
     "-no-user-package-db",
     "-package-db=.cabal-sandbox/x86_64-linux-ghc-7.8.4-packages.conf.d/",
-    tp ++ p ++ ".hs"] ""
+    tp ++ name ++ ".t"] ""
   putStrLn $ "GHC says:\t" ++ ghcResult
 
+  -- 4. Compare the results.
   if hastecResult == ghcResult
      then putStrLn "Results are equal!"
      else putStrLn "Results differ!"
@@ -53,15 +54,8 @@ newTest name gen = do
 testList :: IO [Test]
 testList = sequence [ newTest "Addition" (arbitrary :: Gen (Double, Double)) ]
 
-exportTestData :: TestData -> IO ()
-exportTestData s = do
-  let s' = "testData = " ++ s ++ "\n"
-  putStr s'
-  (++ "testdata.incl") <$> testPath
-                     >>= \fn -> writeFile fn s'
-
 main :: IO ()
 main = do
   -- 1. Create testdata.
-  testList >>= mapM_ (\(Test name td) -> exportTestData td >> runTest name) 
+  testList >>= mapM_ runTest
 
