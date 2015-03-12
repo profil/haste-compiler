@@ -70,15 +70,17 @@ newTest name td = (\t -> Test name $ show t) <$> td
 testList :: IO [Test]
 testList = sequence
   [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double)))
-  , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int)))
   , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double)))
+  , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int)))
   , newTest "BitOps"   (sample' (arbitrary :: Gen (Word, Word)))
-  , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Int, Int, Int, Int)))
   , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Double, Double, Double, Double)))
-  , newTest "Elem"     (sample' (arbitrary :: Gen (String, String)))
-  , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
+  , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Int, Int, Int, Int)))
   , newTest "DoubleConversion" (sample' (arbitrary :: Gen (Int)))
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Double, Double, Double)))
+  , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Int, Int, Int)))
+  , newTest "Elem"     (sample' (arbitrary :: Gen (String, String)))
+  , newTest "EscapedChars" (sample' $ elements ['\0', '\a', '\b', '\f', '\n', '\r', '\t', '\v', '\"', '\'', '\\'])
+  , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
   ]
 
 main :: IO ()
