@@ -17,18 +17,24 @@ data Test = Test Name TestData
 -- | Runs a test.
 runTest :: Test -> IO ()
 runTest (Test name testData) = do
-  tp <- (++ "/Tests/") <$> getCurrentDirectory
+  currDir <- getCurrentDirectory
+  let tp = currDir ++ "/Tests/"
 
   -- There's nothing you can't solve with some sed.
   callCommand $ "sed -e 's/#include \"testdata.incl\"/testData = " ++ testData ++ "/' " ++ tp ++ name ++ ".hs > " ++ tp ++ name ++ ".t"
 
   -- 2. Run the Javascript version of the test.
+  -- Quickfix a bug by changing directory to the same as the tests are in.
+  setCurrentDirectory tp
+  getCurrentDirectory >>= putStrLn 
   callProcess "hastec" [
     "-fforce-recomp",
     "--opt-whole-program",
     "-DO2",
     "--onexec",
     tp ++ name ++ ".t"]
+  -- And then change back.
+  setCurrentDirectory currDir
   hastecResult <- readProcess "node" [tp ++ name ++ ".js"] ""
   putStrLn $ "Haste says:\t" ++ hastecResult
 
