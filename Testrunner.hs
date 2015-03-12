@@ -74,6 +74,8 @@ testList =
            , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Double, Double, Double, Double))) 
            , newTest "Elem"     (sample' (arbitrary :: Gen (String, String))) 
            , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64))) 
+           , newTest "DoubleConversion" (sample' (arbitrary :: Gen (Int))) 
+
            ]
 
 main :: IO ()
