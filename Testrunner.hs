@@ -55,21 +55,23 @@ runTest (Test name testData) = do
      else putStrLn "Results differ!"
 
   removeFile testFile
+  removeFile $ tp ++ name ++ ".js"
   putStrLn ""
 
 newTest :: (Show a) => Name -> IO [a] -> IO Test 
 newTest name td = (\t -> Test name $ show t) <$> td
  
 testList :: IO [Test]
-testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double))) 
-                    , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int))) 
-                    , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double))) 
-                    , newTest "BitOps"   (sample' (arbitrary :: Gen (Word, Word))) 
-                    , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Int, Int, Int, Int))) 
-                    , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Double, Double, Double, Double))) 
-                    , newTest "Elem"     (sample' (arbitrary :: Gen (String, String))) 
-                    , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64))) 
-                    ]
+testList = 
+  sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double))) 
+           , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int))) 
+           , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double))) 
+           , newTest "BitOps"   (sample' (arbitrary :: Gen (Word, Word))) 
+           , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Int, Int, Int, Int))) 
+           , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Double, Double, Double, Double))) 
+           , newTest "Elem"     (sample' (arbitrary :: Gen (String, String))) 
+           , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64))) 
+           ]
 
 main :: IO ()
 main = do
