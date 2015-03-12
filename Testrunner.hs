@@ -5,6 +5,7 @@ import Control.Applicative
 import Control.Monad
 import System.Directory
 import System.IO
+import System.Posix.Files
 import System.Process
 import Test.QuickCheck
 
@@ -19,21 +20,20 @@ runTest :: Test -> IO ()
 runTest (Test name testData) = do
   currDir <- getCurrentDirectory
   let tp = currDir ++ "/Tests/"
-
-  -- There's nothing you can't solve with some sed.
-  callCommand $ "sed -e 's/#include \"testdata.incl\"/testData = " ++ testData ++ "/' " ++ tp ++ name ++ ".hs > " ++ tp ++ name ++ ".t.hs"
+  -- 1. Create testdata.
+  let testFile = tp ++ "testdata.incl"
+  writeFile testFile $ "testData = " ++ testData
 
   -- 2. Run the Javascript version of the test.
   -- Quickfix a bug by changing directory to the same as the tests are in.
   setCurrentDirectory tp
-  getCurrentDirectory >>= putStrLn 
   callProcess "hastec" [
     "-fforce-recomp",
     "--opt-whole-program",
     "-DO2",
     "--onexec",
---    "-main-is Tests." ++ name,
-    tp ++ name ++ ".t.hs"]
+    "-main-is", "Tests." ++ name,
+    tp ++ name ++ ".hs"]
   -- And then change back.
   setCurrentDirectory currDir
   hastecResult <- readProcess "node" [tp ++ name ++ ".js"] ""
@@ -43,7 +43,7 @@ runTest (Test name testData) = do
   ghcResult <- readProcess "runghc" [
     "-no-user-package-db",
     "-package-db=.cabal-sandbox/x86_64-linux-ghc-7.8.4-packages.conf.d/",
-    tp ++ name ++ ".t.hs"] ""
+    tp ++ name ++ ".hs"] ""
   putStrLn $ "GHC says:\t" ++ ghcResult
 
   -- 4. Compare the results.
@@ -51,6 +51,7 @@ runTest (Test name testData) = do
      then putStrLn "Results are equal!"
      else putStrLn "Results differ!"
 
+  removeFile testFile
   putStrLn ""
 
 newTest :: (Show a) => Name -> Gen a -> IO Test 
@@ -63,6 +64,5 @@ testList = sequence [ newTest "Addition" (arbitrary :: Gen (Double, Double)) ]
 
 main :: IO ()
 main = do
-  -- 1. Create testdata.
   testList >>= mapM_ runTest
 
