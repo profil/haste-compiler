@@ -58,7 +58,10 @@ newTest :: (Show a) => Name -> IO [a] -> IO Test
 newTest name td = (\t -> Test name $ show t) <$> td
  
 testList :: IO [Test]
-testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double))) ]
+testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double))) 
+                    , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int))) 
+                    , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double))) 
+                    ]
 
 main :: IO ()
 main = do
