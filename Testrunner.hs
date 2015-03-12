@@ -64,6 +64,7 @@ testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Dou
                     , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int))) 
                     , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double))) 
                     , newTest "BitOps"   (sample' (arbitrary :: Gen (Word, Word))) 
+                    , newTest "ComplexFromIntegral" (sample' (arbitrary :: Gen (Int, Int))) 
                     ]
 
 main :: IO ()
