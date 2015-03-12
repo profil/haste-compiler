@@ -21,6 +21,9 @@ data Test = Test Name TestData
 -- | Runs a test.
 runTest :: Test -> IO ()
 runTest (Test name testData) = do
+  putStrLn $ "================================================================================"
+  putStrLn $ "Running test: " ++ name
+  putStrLn $ "================================================================================"
   currDir <- getCurrentDirectory
   let tp = currDir ++ "/tests/"
   -- 1. Create testdata.
