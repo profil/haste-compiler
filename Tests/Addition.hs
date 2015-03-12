@@ -9,5 +9,5 @@ addition a b = a + b
 
 main :: IO ()
 main = do
-  print $ addition (fst testData) (snd testData)
+  print $ map (\(a,b) -> addition a b) testData
 

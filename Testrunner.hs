@@ -54,13 +54,11 @@ runTest (Test name testData) = do
   removeFile testFile
   putStrLn ""
 
-newTest :: (Show a) => Name -> Gen a -> IO Test 
-newTest name gen = do
-  t <- show <$> (generate gen)
-  return $ Test name t
+newTest :: (Show a) => Name -> IO [a] -> IO Test 
+newTest name td = (\t -> Test name $ show t) <$> td
  
 testList :: IO [Test]
-testList = sequence [ newTest "Addition" (arbitrary :: Gen (Double, Double)) ]
+testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double))) ]
 
 main :: IO ()
 main = do
