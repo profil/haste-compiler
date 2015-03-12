@@ -19,7 +19,7 @@ data Test = Test Name TestData
 runTest :: Test -> IO ()
 runTest (Test name testData) = do
   currDir <- getCurrentDirectory
-  let tp = currDir ++ "/Tests/"
+  let tp = currDir ++ "/tests/"
   -- 1. Create testdata.
   let testFile = tp ++ "testdata.incl"
   writeFile testFile $ "testData = " ++ testData
