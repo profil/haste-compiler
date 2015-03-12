@@ -10,6 +10,7 @@ import System.Process
 import Test.QuickCheck
 
 import Data.Word
+import Data.Int
 
 type Name     = String
 type TestData = String
@@ -65,6 +66,7 @@ testList = sequence [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Dou
                     , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double))) 
                     , newTest "BitOps"   (sample' (arbitrary :: Gen (Word, Word))) 
                     , newTest "Elem"     (sample' (arbitrary :: Gen (String, String))) 
+                    , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64))) 
                     ]
 
 main :: IO ()
