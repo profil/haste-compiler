@@ -21,7 +21,7 @@ runTest (Test name testData) = do
   let tp = currDir ++ "/Tests/"
 
   -- There's nothing you can't solve with some sed.
-  callCommand $ "sed -e 's/#include \"testdata.incl\"/testData = " ++ testData ++ "/' " ++ tp ++ name ++ ".hs > " ++ tp ++ name ++ ".t"
+  callCommand $ "sed -e 's/#include \"testdata.incl\"/testData = " ++ testData ++ "/' " ++ tp ++ name ++ ".hs > " ++ tp ++ name ++ ".t.hs"
 
   -- 2. Run the Javascript version of the test.
   -- Quickfix a bug by changing directory to the same as the tests are in.
@@ -32,7 +32,8 @@ runTest (Test name testData) = do
     "--opt-whole-program",
     "-DO2",
     "--onexec",
-    tp ++ name ++ ".t"]
+--    "-main-is Tests." ++ name,
+    tp ++ name ++ ".t.hs"]
   -- And then change back.
   setCurrentDirectory currDir
   hastecResult <- readProcess "node" [tp ++ name ++ ".js"] ""
@@ -42,7 +43,7 @@ runTest (Test name testData) = do
   ghcResult <- readProcess "runghc" [
     "-no-user-package-db",
     "-package-db=.cabal-sandbox/x86_64-linux-ghc-7.8.4-packages.conf.d/",
-    tp ++ name ++ ".t"] ""
+    tp ++ name ++ ".t.hs"] ""
   putStrLn $ "GHC says:\t" ++ ghcResult
 
   -- 4. Compare the results.
