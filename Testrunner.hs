@@ -78,11 +78,12 @@ escapeCharacters = concat [ "\NUL", "\DLE", "\SOH", "\DC1", "\STX", "\DC2"
                    , "\"",   "\\", "\x1234", "\&56"
                    ]
 
-alfanumericCharacters :: [Char]                   
+alfanumericCharacters :: [Char]
 alfanumericCharacters = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ [' ']
 
 testList :: IO [Test]
 testList = sequence
+{-
   [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double)))
   , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double)))
   , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int)))
@@ -93,8 +94,10 @@ testList = sequence
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Double, Double, Double)))
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Int, Int, Int)))
   , newTest "Elem"     (sample' (arbitrary :: Gen (String, String)))
-  , newTest "EscapedCharSequences" (sample' $ elements (escapeCharacters ++ alfanumericCharacters))
-  , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
+  
+  , -}
+  [ newTest "EscapedCharSequences" (sample' $ elements (escapeCharacters ++ alfanumericCharacters))
+  ----, newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
   ]
 
 main :: IO ()
