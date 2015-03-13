@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Tests.EscapedChars where
+module Tests.EscapedCharSequences where
 import Data.Char (ord)
 
 {-# NOINLINE testData #-}
@@ -11,5 +11,5 @@ testData2 = testData ++ testData
 -- Standalone SpiderMonkey can't handle showing Unicode chars, so we have to
 -- look at the char codes. :(
 main :: IO ()
-main = print $ map ord testData2
+main = print testData2
 

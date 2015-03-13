@@ -67,6 +67,20 @@ runTest (Test name testData) = do
 newTest :: (Show a) => Name -> IO [a] -> IO Test
 newTest name td = (\t -> Test name $ show t) <$> td
 
+escapeCharacters :: [Char]
+escapeCharacters = concat [ "\NUL", "\DLE", "\SOH", "\DC1", "\STX", "\DC2"
+                   , "\ETX", "\DC3", "\EOT", "\DC4", "\ENQ", "\NAK"
+                   , "\ACK", "\SYN", "\BEL", "\ETB", "\BS",  "\CAN"
+                   , "\EM",  "\LF",  "\SUB", "\VT",  "\ESC"
+                   , "\FF",  "\FS",  "\CR",  "\GS",  "\SO",  "\RS"
+                   , "\SI",  "\US",  "\DEL", "\0",   "\a",   "\b"
+                   , "\f",   "\n",   "\r",   "\t",   "\v",   "\""
+                   , "\"",   "\\", "\x1234", "\&56"
+                   ]
+
+alfanumericCharacters :: [Char]                   
+alfanumericCharacters = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ [' ']
+
 testList :: IO [Test]
 testList = sequence
   [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double)))
@@ -79,7 +93,7 @@ testList = sequence
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Double, Double, Double)))
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Int, Int, Int)))
   , newTest "Elem"     (sample' (arbitrary :: Gen (String, String)))
-  , newTest "EscapedChars" (sample' $ elements ['\0', '\a', '\b', '\f', '\n', '\r', '\t', '\v', '\"', '\'', '\\'])
+  , newTest "EscapedCharSequences" (sample' $ elements (escapeCharacters ++ alfanumericCharacters))
   , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
   ]
 
