@@ -2,6 +2,7 @@ module Testrunner where
 
 -- Run tests
 import Control.Applicative
+import Control.Concurrent.Async
 import Control.Monad
 import System.Directory
 import System.IO
@@ -19,50 +20,59 @@ data Test = Test Name TestData
   deriving Show
 
 -- | Runs a test.
-runTest :: Test -> IO ()
+runTest :: Test -> IO String
 runTest (Test name testData) = do
-  putStrLn $ "================================================================================"
-  putStrLn $ "Running test: " ++ name
-  putStrLn $ "================================================================================"
   currDir <- getCurrentDirectory
   let tp = currDir ++ "/tests/"
+  let ip = tp ++ "includedir" ++ name ++ "/"
+
+  -- Create a directory for the included testdata file.
+  -- With this we can handle tests running in parallell.
+  createDirectoryIfMissing False ip
+
   -- 1. Create testdata.
-  let testFile = tp ++ "testdata.incl"
+  let testFile = ip ++ "testdata.incl"
   writeFile testFile $ "testData = " ++ testData
 
   -- 2. Run the Javascript version of the test.
   -- Quickfix a bug by changing directory to the same as the tests are in.
-  setCurrentDirectory tp
-  callProcess "hastec" [
-    "-fforce-recomp",
-    "--opt-whole-program",
-    "-DO2",
-    "--onexec",
-    "-main-is", "Tests." ++ name,
-    tp ++ name ++ ".hs"]
-  -- And then change back.
-  setCurrentDirectory currDir
+  let args = proc "hastec" [ "-fforce-recomp"
+                           , "--opt-whole-program"
+                           , "-DO2"
+                           , "--onexec"
+                           , "-I" ++ ip
+                           , "-main-is"
+                           , "Tests." ++ name
+                           , tp ++ name ++ ".hs"]
+  (_,_,_,p) <- createProcess $ args { cwd = Just tp }
+  waitForProcess p
+
   hastecResult <- readProcess "node" [tp ++ name ++ ".js"] ""
-  putStrLn $ "Haste says:\t" ++ hastecResult
 
   -- 3. Run the Haskell version of the test.
   ghcResult <- readProcess "runghc" [
     "-no-user-package-db",
+    "-I" ++ ip,
     "-package-db=.cabal-sandbox/x86_64-linux-ghc-7.8.4-packages.conf.d/",
     tp ++ name ++ ".hs"] ""
-  putStrLn $ "GHC says:\t" ++ ghcResult
 
-  -- 4. Compare the results.
+  removeDirectoryRecursive ip
+--  removeFile $ tp ++ name ++ ".js"
+
+  let result = [ "================================================================================"
+               , "Running test: " ++ name
+               , "================================================================================"
+               , ""
+               , "Haste says:\t" ++ hastecResult
+               , "GHC says:\t" ++ ghcResult
+               , ""
+               ]
+
+  -- 4. Compare the results and return.
   if hastecResult == ghcResult
-     then putStrLn "Results are equal!"
-     else do
-       putStrLn "Results differ!"
-       putStrLn $ "Testdata: " ++ testData
+     then return $ join $ result ++ ["Results are equal!", ""]
+     else return $ join $ result ++ ["Results differ!", "Testdata: " ++ testData]
 
-
-  removeFile testFile
-  removeFile $ tp ++ name ++ ".js"
-  putStrLn ""
 
 newTest :: (Show a) => Name -> IO [a] -> IO Test
 newTest name td = (\t -> Test name $ show t) <$> td
@@ -83,7 +93,6 @@ alfanumericCharacters = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ [' ']
 
 testList :: IO [Test]
 testList = sequence
-{-
   [ newTest "Addition" (sample' (arbitrary :: Gen (Double, Double)))
   , newTest "Addition" (sample' (arbitrary :: Gen (Int, Double)))
   , newTest "Addition" (sample' (arbitrary :: Gen (Int, Int)))
@@ -94,13 +103,12 @@ testList = sequence
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Double, Double, Double)))
   , newTest "DoubleDiv" (sample' (arbitrary :: Gen (Int, Int, Int)))
   , newTest "Elem"     (sample' (arbitrary :: Gen (String, String)))
-  
-  , -}
-  [ newTest "EscapedCharSequences" (sample' $ elements (escapeCharacters ++ alfanumericCharacters))
-  ----, newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
+  , newTest "EscapedCharSequences" (sample' $ elements (escapeCharacters ++ alfanumericCharacters))
+  , newTest "Int64"    (sample' (arbitrary :: Gen (Int64, Int64)))
   ]
 
 main :: IO ()
 main = do
-  testList >>= mapM_ runTest
+  tests <- testList
+  mapConcurrently runTest tests >>= (putStrLn . concat)
 
